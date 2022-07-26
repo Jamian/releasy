@@ -1,5 +1,5 @@
 # Releasy
-![Bandit](https://github.com/jamian/releasy/actions/workflows/bandit.yml/badge.svg)
+![Bandit](https://github.com/jamian/releasy/actions/workflows/bandit.yml/badge.svg) [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=Jamian_releasy&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=Jamian_releasy) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Jamian_releasy&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Jamian_releasy)
 
 Sometimes, with complex releases, figuring out where all the different changes have occurred can be overwhelming. Releasy leverages the Jira `dev-status` (and other) APIs to map repositories and code paths back to a Jira Release. This is especially useful if you're trying to figure out all the different Terraform Projects which need to be applied as part of releases.
 
