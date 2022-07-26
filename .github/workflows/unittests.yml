@@ -23,3 +23,14 @@ jobs:
       - name: Test with pytest
         run: |
           coverage run -m pytest releasy/tests/*
+          coverage xml
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.organization=jamian
+            -Dsonar.projectKey=Jamian_releasy
+            -Dsonar.python.coverage.reportPaths=coverage.xml
