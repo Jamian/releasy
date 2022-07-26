@@ -14,12 +14,13 @@ from urllib.parse import urljoin
 class JiraClient():
     _email = None
     _api_key = None
-    _url_base = os.environ['RELEASY_JIRA_BASE_URL']
+    _url_base = None
 
     def __init__(self, email: str, api_key: str) -> None:
         self._email = email
         self._api_key = api_key
         self._auth = requests.auth.HTTPBasicAuth(email, api_key)
+        self._url_base = os.environ['RELEASY_JIRA_BASE_URL']
 
     def get_issues(self, project: str, version: str) -> list:
         """Fetches and returns a list of issues related to a release from Jira.
@@ -52,6 +53,7 @@ class JiraClient():
             'Accept': 'application/json'
         }
         response = requests.get(endpoint, headers=headers, auth=self._auth)
+        print(response.json())
         return response.json()
 
     def get_releases(self, project_key: str) -> list:
