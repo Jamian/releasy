@@ -115,6 +115,7 @@ def run(version, projects, jira_auth_username, jira_auth_api_key, iac_re_pattern
 
     changed_app_projects = set()
     changed_iac_projects = set()
+    changed_project_repos = {}
 
     for issue in issues:
         response = jira_client.get_dev_status(issue['id'])
@@ -127,16 +128,18 @@ def run(version, projects, jira_auth_username, jira_auth_api_key, iac_re_pattern
                             project_path_parts = file['path'].split('/')
                             path = '/'.join(project_path_parts[:-1])
                             changed_iac_projects.add(f'{repo_name}/{path}')
+                            changed_project_repos[f'{repo_name}/{path}'] = repo['url']
                 else:
                     if repo_name not in changed_app_projects:
                         changed_app_projects.add(repo_name)
+                        changed_project_repos[repo_name] = repo['url']
 
     m_dir = pathlib.Path(__file__).parent.resolve()
     index_html = open(os.path.join(m_dir, 'templates/index.html.template'), 'r').read()
     index_html = index_html.replace('[[ release_version ]]', version)
     app_table_body_html = ""
     for project in changed_app_projects:
-        anchor_html = f'<a target="_blank" href={git_base_url}{project}/>' if git_base_url is not None else ''
+        anchor_html = f'<a target="_blank" href={git_base_url}/>' if git_base_url is not None else f'<a target="_blank" href={changed_project_repos[project]}/>'
         app_table_body_html = app_table_body_html + f"""        <tr>
                 <td>{anchor_html}{project}</td>
             </tr>
@@ -144,7 +147,7 @@ def run(version, projects, jira_auth_username, jira_auth_api_key, iac_re_pattern
 
     iac_table_body_html = ""
     for project in changed_iac_projects:
-        anchor_html = f'<a target="_blank" href={git_base_url}{project.replace("/", "/tree/main/", 1)}/>' if git_base_url is not None else ''
+        anchor_html = f'<a target="_blank" href={git_base_url}/>' if git_base_url is not None else f'<a target="_blank" href={changed_project_repos[project]}/>'
         iac_table_body_html = iac_table_body_html + f"""        <tr>
                 <td>{anchor_html}{project}</td>
             </tr>
