@@ -53,7 +53,6 @@ class JiraClient():
             'Accept': 'application/json'
         }
         response = requests.get(endpoint, headers=headers, auth=self._auth)
-        print(response.json())
         return response.json()
 
     def get_releases(self, project_key: str) -> list:
