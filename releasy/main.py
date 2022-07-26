@@ -14,12 +14,13 @@ from urllib.parse import urljoin
 class JiraClient():
     _email = None
     _api_key = None
-    _url_base = os.environ['RELEASY_JIRA_BASE_URL']
+    _url_base = None
 
     def __init__(self, email: str, api_key: str) -> None:
         self._email = email
         self._api_key = api_key
         self._auth = requests.auth.HTTPBasicAuth(email, api_key)
+        self._url_base = os.environ['RELEASY_JIRA_BASE_URL']
 
     def get_issues(self, project: str, version: str) -> list:
         """Fetches and returns a list of issues related to a release from Jira.
@@ -139,7 +140,7 @@ def run(version, projects, jira_auth_username, jira_auth_api_key, iac_re_pattern
     index_html = index_html.replace('[[ release_version ]]', version)
     app_table_body_html = ""
     for project in changed_app_projects:
-        anchor_html = f'<a target="_blank" href={git_base_url}/>' if git_base_url is not None else f'<a target="_blank" href={changed_project_repos[project]}/>'
+        anchor_html = f'<a target="_blank" href={git_base_url}{project}/>' if git_base_url is not None else f'<a target="_blank" href={changed_project_repos[project]}/>'
         app_table_body_html = app_table_body_html + f"""        <tr>
                 <td>{anchor_html}{project}</td>
             </tr>
@@ -147,7 +148,7 @@ def run(version, projects, jira_auth_username, jira_auth_api_key, iac_re_pattern
 
     iac_table_body_html = ""
     for project in changed_iac_projects:
-        anchor_html = f'<a target="_blank" href={git_base_url}/>' if git_base_url is not None else f'<a target="_blank" href={changed_project_repos[project]}/>'
+        anchor_html = f'<a target="_blank" href={git_base_url}{project}/>' if git_base_url is not None else f'<a target="_blank" href={changed_project_repos[project]}/>'
         iac_table_body_html = iac_table_body_html + f"""        <tr>
                 <td>{anchor_html}{project}</td>
             </tr>
