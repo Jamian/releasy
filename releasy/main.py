@@ -80,7 +80,8 @@ def _is_iac(repo_name: str, pattern: str) -> bool:
 @click.option('--jira-auth-username', default=None, help='The username to authenticate with Jira.')
 @click.option('--jira-auth-api-key', default=None, help='The Jira API Key to authenticate with Jira.')
 @click.option('--iac-re-pattern', default='^terraform-layer-.*$', help='The regex pattern to match IAC repositories against.')
-def run(version, projects, jira_auth_username, jira_auth_api_key, iac_re_pattern):
+@click.option('--git-base-url', help='The base url to the git-based source code repository.')
+def run(version, projects, jira_auth_username, jira_auth_api_key, iac_re_pattern, git_base_url):
 
     if not version:
         raise ValueError('Missing required input "version". Please see help.')
@@ -100,6 +101,12 @@ def run(version, projects, jira_auth_username, jira_auth_api_key, iac_re_pattern
             print('Please set "--jira-auth-api-key" or the environment variable "RELEASY_JIRA_AUTH_API_KEY".')
             exit(1)
 
+    if not git_base_url:
+        try:
+            git_base_url = os.environ['RELEASY_GIT_BASE_URL']
+        except KeyError:
+            pass
+        
     jira_client = JiraClient(jira_auth_username, jira_auth_api_key)
 
     issues = []
@@ -129,15 +136,17 @@ def run(version, projects, jira_auth_username, jira_auth_api_key, iac_re_pattern
     index_html = index_html.replace('[[ release_version ]]', version)
     app_table_body_html = ""
     for project in changed_app_projects:
+        anchor_html = f'<a target="_blank" href={git_base_url}{project}/>' if git_base_url is not None else ''
         app_table_body_html = app_table_body_html + f"""        <tr>
-                <td>{project}</td>
+                <td>{anchor_html}{project}</td>
             </tr>
     """
 
     iac_table_body_html = ""
     for project in changed_iac_projects:
+        anchor_html = f'<a target="_blank" href={git_base_url}{project.replace("/", "/tree/main/", 1)}/>' if git_base_url is not None else ''
         iac_table_body_html = iac_table_body_html + f"""        <tr>
-                <td>{project}</td>
+                <td>{anchor_html}{project}</td>
             </tr>
     """
 

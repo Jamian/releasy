@@ -12,4 +12,4 @@ This handy CLI tool will figure this all out and generate a handy HTML page with
 
 1. `virtualenv -p python3 venv`
 2. `pip install -e .`
-3. `RELEASY_JIRA_BASE_URL=<jira-base-url> RELEASY_JIRA_AUTH_USERNAME=<jira-email> RELEASY_JIRA_AUTH_API_KEY=<jira-api-key> releasy --version <version> --projects <project1,project2...>`
+3. `RELEASY_GIT_BASE_URL=<git-base-url> RELEASY_JIRA_BASE_URL=<jira-base-url> RELEASY_JIRA_AUTH_USERNAME=<jira-email> RELEASY_JIRA_AUTH_API_KEY=<jira-api-key> releasy --version <version> --projects <project1,project2...>`
