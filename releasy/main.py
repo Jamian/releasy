@@ -122,7 +122,7 @@ def run(version, projects, jira_auth_username, jira_auth_api_key, iac_re_pattern
         response = jira_client.get_dev_status(issue['id'])
         for detail in response['detail']:
             for repo in detail['repositories']:
-                repo_name = repo['name']
+                repo_name = repo['name'] if '/' not in repo['name'] else repo['name'].split('/')[1]
                 if _is_iac(repo_name, iac_re_pattern):
                     for commit in repo['commits']:
                         for file in commit['files']:
