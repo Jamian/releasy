@@ -103,10 +103,7 @@ def run(version, projects, jira_auth_username, jira_auth_api_key, iac_re_pattern
             exit(1)
 
     if not git_base_url:
-        try:
-            git_base_url = os.environ['RELEASY_GIT_BASE_URL']
-        except KeyError:
-            pass
+        git_base_url = os.getenv('RELEASY_GIT_BASE_URL', None)
         
     jira_client = JiraClient(jira_auth_username, jira_auth_api_key)
 
