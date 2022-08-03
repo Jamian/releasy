@@ -81,7 +81,8 @@ def _is_iac(repo_name: str, pattern: str) -> bool:
 @click.option('--jira-auth-username', default=None, help='The username to authenticate with Jira.')
 @click.option('--jira-auth-api-key', default=None, help='The Jira API Key to authenticate with Jira.')
 @click.option('--iac-re-pattern', default='^terraform-layer-.*$', help='The regex pattern to match IAC repositories against.')
-def run(version, projects, jira_auth_username, jira_auth_api_key, iac_re_pattern):
+@click.option('--git-base-url', help='The base url to the git-based source code repository.')
+def run(version, projects, jira_auth_username, jira_auth_api_key, iac_re_pattern, git_base_url):
 
     if not version:
         raise ValueError('Missing required input "version". Please see help.')
@@ -101,6 +102,9 @@ def run(version, projects, jira_auth_username, jira_auth_api_key, iac_re_pattern
             print('Please set "--jira-auth-api-key" or the environment variable "RELEASY_JIRA_AUTH_API_KEY".')
             exit(1)
 
+    if not git_base_url:
+        git_base_url = os.getenv('RELEASY_GIT_BASE_URL', None)
+        
     jira_client = JiraClient(jira_auth_username, jira_auth_api_key)
 
     issues = []
@@ -109,36 +113,41 @@ def run(version, projects, jira_auth_username, jira_auth_api_key, iac_re_pattern
 
     changed_app_projects = set()
     changed_iac_projects = set()
+    changed_project_repos = {}
 
     for issue in issues:
         response = jira_client.get_dev_status(issue['id'])
         for detail in response['detail']:
             for repo in detail['repositories']:
-                repo_name = repo['name']
+                repo_name = repo['name'] if '/' not in repo['name'] else repo['name'].split('/')[1]
                 if _is_iac(repo_name, iac_re_pattern):
                     for commit in repo['commits']:
                         for file in commit['files']:
                             project_path_parts = file['path'].split('/')
                             path = '/'.join(project_path_parts[:-1])
                             changed_iac_projects.add(f'{repo_name}/{path}')
+                            changed_project_repos[f'{repo_name}/{path}'] = repo['url']
                 else:
                     if repo_name not in changed_app_projects:
                         changed_app_projects.add(repo_name)
+                        changed_project_repos[repo_name] = repo['url']
 
     m_dir = pathlib.Path(__file__).parent.resolve()
     index_html = open(os.path.join(m_dir, 'templates/index.html.template'), 'r').read()
     index_html = index_html.replace('[[ release_version ]]', version)
     app_table_body_html = ""
     for project in changed_app_projects:
+        anchor_html = f'<a target="_blank" href={git_base_url}{project}/>' if git_base_url is not None else f'<a target="_blank" href={changed_project_repos[project]}/>'
         app_table_body_html = app_table_body_html + f"""        <tr>
-                <td>{project}</td>
+                <td>{anchor_html}{project}</td>
             </tr>
     """
 
     iac_table_body_html = ""
     for project in changed_iac_projects:
+        anchor_html = f'<a target="_blank" href={git_base_url}{project}/>' if git_base_url is not None else f'<a target="_blank" href={changed_project_repos[project]}/>'
         iac_table_body_html = iac_table_body_html + f"""        <tr>
-                <td>{project}</td>
+                <td>{anchor_html}{project}</td>
             </tr>
     """
 
